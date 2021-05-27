@@ -5,7 +5,8 @@ import {
   Route
 } from "react-router-dom";
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
-import Amplify, { DataStore, syncExpression, Predicates, SortDirection,  Storage, Auth } from 'aws-amplify';
+import Amplify, { DataStore, syncExpression, Predicates, SortDirection,  Storage, Auth, Analytics } from 'aws-amplify';
+
 import { Post, PostStatus } from "./models";
 import { css } from '@emotion/css';
 

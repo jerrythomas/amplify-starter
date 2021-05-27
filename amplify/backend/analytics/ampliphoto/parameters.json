@@ -1,0 +1,21 @@
+{
+    "appName": "ampliphoto",
+    "roleName": "pinpointLambdaRoled48df6c4",
+    "cloudformationPolicyName": "cloudformationPolicyd48df6c4",
+    "cloudWatchPolicyName": "cloudWatchPolicyd48df6c4",
+    "pinpointPolicyName": "pinpointPolicyd48df6c4",
+    "authPolicyName": "pinpoint_amplify_d48df6c4",
+    "unauthPolicyName": "pinpoint_amplify_d48df6c4",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "authRoleArn": {
+        "Fn::GetAtt": [
+            "AuthRole",
+            "Arn"
+        ]
+    }
+}
