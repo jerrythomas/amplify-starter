@@ -5,16 +5,19 @@ import {
   Route
 } from "react-router-dom";
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
-import { API, Storage, Auth } from 'aws-amplify';
-import { listPosts } from './graphql/queries';
+import Amplify, { DataStore, syncExpression, Predicates, SortDirection,  Storage, Auth } from 'aws-amplify';
+import { Post, PostStatus } from "./models";
 import { css } from '@emotion/css';
 
-import { Button, Posts, Post, Header, CreatePost } from './components';
-// import Posts from './components/Posts';
-// import Post from './components/Post';
-// import Header from './components/Header';
-// import CreatePost from './components/CreatePost';
-// import Button from './components/Button';
+import { Posts, SinglePost, Header, CreatePost, Button} from './components'
+
+DataStore.configure({
+  syncExpressions: [
+    syncExpression(Post, () => {
+      return post => post.status('eq', PostStatus.ACTIVE)
+    })
+  ]
+});
 
 function Router() {
   /* create a couple of pieces of initial state */
@@ -25,18 +28,32 @@ function Router() {
   /* fetch posts when component loads */
   useEffect(() => {
       fetchPosts();
+      const subscription = DataStore.observe(Post).subscribe(msg => {
+        console.log(msg.model, msg.opType, msg.element);
+        fetchPosts();
+      });
   }, []);
   async function fetchPosts() {
+    
+    /* check if user is logged in */
+    let user = await Auth.currentAuthenticatedUser();
+    Amplify.configure({
+      aws_appsync_authenticationType: user != null ? 'AMAZON_COGNITO_USER_POOLS' : 'API_KEY',
+    });
+    
     /* query the API, ask for 100 items */
-    let postData = await API.graphql({ query: listPosts, variables: { limit: 100 }});
-    let postsArray = postData.data.listPosts.items;
+    let postData = await DataStore.query(Post);
+    console.log('POST DATA FROM LOCAL: ');
+    console.log(postData);
+    let postsArray = postData;
     /* map over the image keys in the posts array, get signed image URLs for each image */
     postsArray = await Promise.all(postsArray.map(async post => {
-      if(post.image != null) {
-        const imageKey = await Storage.get(post.image);
-        post.image = imageKey;
+      let copyPost = {...post};
+      if(copyPost.image != null) {
+        const imageKey = await Storage.get(copyPost.image);
+        copyPost.image = imageKey;
       }
-      return post;
+      return copyPost;
     }));
     /* update the posts array in the local state */
     setPostState(postsArray);
@@ -54,19 +71,19 @@ function Router() {
             <Header />
             <hr className={dividerStyle} />
             <Button title="New Post" onClick={() => updateOverlayVisibility(true)} />
+            <hr className={dividerStyle} />
             <Switch>
               <Route exact path="/" >
                 <Posts posts={posts} />
               </Route>
               <Route path="/post/:id" >
-                <Post />
+                <SinglePost />
               </Route>
               <Route exact path="/myposts" >
                 <Posts posts={myPosts} />
               </Route>
             </Switch>
           </div>
-          <AmplifySignOut />
         </HashRouter>
         { showOverlay && (
           <CreatePost
@@ -86,6 +103,12 @@ const dividerStyle = css`
 const contentStyle = css`
   min-height: calc(100vh - 45px);
   padding: 0px 40px;
+  width: 80vw;
+  max-width: 690px;
+  margin:auto;
+  font-family:'Amazon Ember', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  background: #fff;
 `
 
 export default withAuthenticator(Router);
+

@@ -9,7 +9,7 @@ export default function Header() {
       <h1 className={headerStyle}>Amplifoto</h1>
       <Link to="/" className={linkStyle}>All Posts</Link>
       <Link to="/myposts" className={linkStyle}>My Posts</Link>
-      <Link className={signoutStyle}><AmplifySignOut /></Link>
+      <Link to="/" className={signoutStyle}><AmplifySignOut /></Link>
     </div>
   )
 }

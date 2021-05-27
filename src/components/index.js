@@ -1,7 +1,7 @@
 import Button from './Button'
 import Posts from './Posts';
-import Post from './Post';
+import SinglePost from './SinglePost';
 import Header from './Header';
 import CreatePost from './CreatePost';
 
-export { Button, Posts, Post, Header, CreatePost }
+export { Button, Posts, SinglePost, Header, CreatePost }

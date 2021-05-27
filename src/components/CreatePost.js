@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import Button from './Button';
 import { v4 as uuid } from 'uuid';
-import Amplify, { Storage, API, Auth, Predictions } from 'aws-amplify';
+import Amplify, { Storage, DataStore, Auth, Predictions } from 'aws-amplify';
 import { AmazonAIPredictionsProvider } from '@aws-amplify/predictions';
-import { createPost } from '../graphql/mutations';
+//import { createPost } from './graphql/mutations';
+import { Post } from "../models";
 
 Amplify.addPluggable(new AmazonAIPredictionsProvider());
 
@@ -68,15 +69,14 @@ export default function CreatePost({
       /* --- end PREDICTIONS --- */
       const postId = uuid();
       const postDescription = description + predictedLabel;
-      const postInfo = { name, description: postDescription, location, image: formState.image.name, id: postId };
+      const { username } = await Auth.currentAuthenticatedUser()
+      const postInfo = { name, description: postDescription, location, image: formState.image.name, id: postId, owner: username };
       console.log("post info is");
       console.log(postInfo)
-      await API.graphql({
-        query: createPost,
-        variables: { input: postInfo },
-        authMode: 'AMAZON_COGNITO_USER_POOLS'
-      });
-      const { username } = await Auth.currentAuthenticatedUser()
+      let savedPost = await DataStore.save(new Post(postInfo));
+      console.log('savePost is');
+      console.log(savedPost);
+      
       updatePosts([...posts, { ...postInfo, image: formState.file, owner: username }]);
       updateFormState(currentState => ({ ...currentState, saving: false }));
       updateOverlayVisibility(false);
@@ -152,3 +152,4 @@ const containerStyle = css`
 const savingMessageStyle = css`
   margin-bottom: 0px;
 `
+

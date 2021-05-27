@@ -1,3 +1,9 @@
+enum PostStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
 type Post @model
   @auth(rules: [
     { allow: owner, ownerField: "owner" },
@@ -10,4 +16,6 @@ type Post @model
   description: String!
   image: String
   owner: String
+  status: PostStatus
 }
+
