@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import Button from './Button';
 import { v4 as uuid } from 'uuid';
-import Amplify, { Storage, DataStore, Auth, Predictions } from 'aws-amplify';
+import Amplify, { Storage, DataStore, Auth, Predictions, Analytics } from 'aws-amplify';
 import { AmazonAIPredictionsProvider } from '@aws-amplify/predictions';
 //import { createPost } from './graphql/mutations';
 import { Post } from "../models";
@@ -76,7 +76,7 @@ export default function CreatePost({
       let savedPost = await DataStore.save(new Post(postInfo));
       console.log('savePost is');
       console.log(savedPost);
-      
+      Analytics.record({name: 'postCreated'});
       updatePosts([...posts, { ...postInfo, image: formState.file, owner: username }]);
       updateFormState(currentState => ({ ...currentState, saving: false }));
       updateOverlayVisibility(false);
